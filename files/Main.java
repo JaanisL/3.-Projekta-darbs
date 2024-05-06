@@ -1,6 +1,6 @@
-//211REC027 Jānis Lejnieks
-//231RDB255 Mārtiņš Rimša
-//231RDB247 Reinis Kurtišs
+//211REC027 Jānis Lejnieks 4.grupa
+//231RDB255 Mārtiņš Rimša 4.grupa
+//231RDB247 Reinis Kurtišs 4.grupa
 
 import java.util.Scanner;
 import java.io.*;
@@ -246,9 +246,9 @@ public class Main {
 
     public static void about() {
         // TODO insert information about authors
-        System.out.println("211REC027 Jānis Lejnieks");
-        System.out.println("231RDB255 Mārtiņš Rimša");
-        System.out.println("231RDB247 Reinis Kurtišs");
+        System.out.println("211REC027 Jānis Lejnieks 4.grupa");
+        System.out.println("231RDB255 Mārtiņš Rimša 4.grupa");
+        System.out.println("231RDB247 Reinis Kurtišs 4.grupa");
     }
 
     //buildFrequencyTable, buildHuffmanTree, buildCodeTable, buildCodeTableHelper, writeHuffmanTree, readHuffmanTree, writeCompressedData, decodeHuffmanData.
