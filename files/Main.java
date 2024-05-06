@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.PriorityQueue;
 
 public class Main {
-
+    //Represents a node used in a HuffmanTree. Compares nodes based on their frequencies to construct a tree.
     static class HuffmanTree implements Comparable<HuffmanTree> {
-        public final int frequency;
-
+        public final int frequency; // frequency refers to count of symbols in input data
+                                    // symbols with higher frequencies recieve shorter codewords during compression // optimazes space
         public HuffmanTree(int frequency) {
             this.frequency = frequency;
         }
@@ -20,6 +20,7 @@ public class Main {
         }
     }
 
+    //For Leaf node in huffmantree to compress data
     static class HuffmanLeaf extends HuffmanTree {
         public final byte symbol;
 
@@ -28,6 +29,7 @@ public class Main {
             this.symbol = symbol;
         }
     }
+    //Represents internal node used for data compression --> combines 2 child nodes in one frequency
     static class HuffmanNode extends HuffmanTree {
         public final HuffmanTree left;
         public final HuffmanTree right;
@@ -38,7 +40,7 @@ public class Main {
             this.right = right;
         }
     }
-
+    //Reads binary data from input. Makes buffer(temp.storage) to store bytes. Tracks number of bits remaining in current byte
     static class BitInputStream {
         private InputStream inputStream;
         private int currentByte;
@@ -50,7 +52,7 @@ public class Main {
         this.numBitsRemaining = 0;
     }
 
-    public int readBit() throws IOException {
+    public int readBit() throws IOException {  //reads and returns next bit from input 
         if (numBitsRemaining == 0) {
             currentByte = inputStream.read();
             if (currentByte == -1) {
@@ -58,16 +60,17 @@ public class Main {
             }
             numBitsRemaining = 8;  //in byte
         }
-        int bit = (currentByte >> (numBitsRemaining - 1)) & 1;
+        int bit = (currentByte >> (numBitsRemaining - 1)) & 1; //extracts next bit from current byte -> to right
         numBitsRemaining--;
         return bit;
     }
 
-    public void close() throws IOException {
+    public void close() throws IOException {   //closes input stream
         inputStream.close();
     }
 }
 
+    //writes binary data to output stream. Writes in buffer(temp.storage) then outputs it all.
     static class BitOutputStream {
         private OutputStream outputStream;
         private int currentByte;
@@ -79,6 +82,7 @@ public class Main {
             this.numBitsFilled = 0;
         }
 
+        //writes specified number of bits out  
         public void writeBits(int numBits, int value) throws IOException {
             for (int i = numBits - 1; i >= 0; i--) {
                 int bit = (value >> i) & 1;
@@ -91,7 +95,7 @@ public class Main {
                 }
             }
         }
-
+        //closes writing
         public void close() throws IOException {
             while (numBitsFilled != 0) {
                 writeBits(1, 0);
@@ -108,7 +112,7 @@ public class Main {
         loop: while (true) {
 
             choiseStr = sc.next();
-            // TO OPEM FILE WRITE FULL PATH NAME.
+            // TO OPEM FILE TO (comp, decomp...) WRITE FULL PATH NAME.
             switch (choiseStr) {
                 case "comp":
                     System.out.print("source file name: ");
@@ -147,6 +151,7 @@ public class Main {
         sc.close();
     }
 
+    //encodes file data with Huffman coding and writes compressed data to new output file with huffman tree structure.
     public static void comp(String sourceFileName, String archiveName) {
         try {
             FileInputStream fileInputStream = new FileInputStream(sourceFileName);
@@ -170,6 +175,7 @@ public class Main {
         }
     }
 
+    // decompresses file from huffman compressed file - decodes data and writes in new output file the original file.
     public static void decomp(String archiveName, String fileName) {
         try {
             FileInputStream fileInputStream = new FileInputStream(archiveName);
@@ -189,7 +195,7 @@ public class Main {
         }
     }
 
-
+    //gets available bytes and prints size to console
     public static void size(String sourceFile) {
         try {
             FileInputStream f = new FileInputStream(sourceFile);
@@ -201,10 +207,12 @@ public class Main {
 
     }
 
+    //compares 2 files by reading bytes and comparing them 
     public static boolean equal(String firstFile, String secondFile) {
         try {
             FileInputStream f1 = new FileInputStream(firstFile);
             FileInputStream f2 = new FileInputStream(secondFile);
+
             int k1, k2;
             byte[] buf1 = new byte[1000];
             byte[] buf2 = new byte[1000];
@@ -216,6 +224,7 @@ public class Main {
                     f2.close();
                     return false;
                 }
+
                 for (int i = 0; i < k1; i++) {
                     if (buf1[i] != buf2[i]) {
                         f1.close();
@@ -228,6 +237,7 @@ public class Main {
             f1.close();
             f2.close();
             return true;
+
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
             return false;
@@ -247,6 +257,7 @@ public class Main {
     private static HashMap<Byte, Integer> buildFrequencyTable(InputStream inputStream) throws IOException {
         HashMap<Byte, Integer> frequencyTable = new HashMap<>();
         int byteRead;
+
         while ((byteRead = inputStream.read()) != -1) {
             frequencyTable.put((byte) byteRead, frequencyTable.getOrDefault((byte) byteRead, 0) + 1);
         }
@@ -256,9 +267,11 @@ public class Main {
     //Constructs Huffman tree from byte frequency
     private static HuffmanTree buildHuffmanTree(HashMap<Byte, Integer> frequencyTable) {
         PriorityQueue<HuffmanTree> priorityQueue = new PriorityQueue<>();
+
         for (Byte symbol : frequencyTable.keySet()) {
             priorityQueue.offer(new HuffmanLeaf(symbol, frequencyTable.get(symbol)));
         }
+
         while (priorityQueue.size() > 1) {
             HuffmanTree left = priorityQueue.poll();
             HuffmanTree right = priorityQueue.poll();
@@ -276,9 +289,11 @@ public class Main {
 
     //Helps to build byte-to-codeword mapping for compression
     private static void buildCodeTableHelper(HuffmanTree huffmanTree, String code, HashMap<Byte, String> codeTable) {
+
         if (huffmanTree instanceof HuffmanLeaf) {
             HuffmanLeaf leaf = (HuffmanLeaf) huffmanTree;
             codeTable.put(leaf.symbol, code);
+
         } else if (huffmanTree instanceof HuffmanNode) {
             HuffmanNode node = (HuffmanNode) huffmanTree;
             buildCodeTableHelper(node.left, code + "0", codeTable);
@@ -287,9 +302,11 @@ public class Main {
     }
     //Writes Huffman tree structure for compression output (comp)
     private static void writeHuffmanTree(HuffmanTree huffmanTree, BitOutputStream bitOutputStream) throws IOException {
+
         if (huffmanTree instanceof HuffmanLeaf) {
             bitOutputStream.writeBits(1, 0);
             bitOutputStream.writeBits(8, ((HuffmanLeaf) huffmanTree).symbol);
+
         } else if (huffmanTree instanceof HuffmanNode) {
             bitOutputStream.writeBits(1, 1);
             writeHuffmanTree(((HuffmanNode) huffmanTree).left, bitOutputStream);
@@ -304,22 +321,26 @@ public class Main {
             HuffmanTree left = readHuffmanTree(bitInputStream);
             HuffmanTree right = readHuffmanTree(bitInputStream);
             return new HuffmanNode(left, right);
+
         } else {
             // Leaf node
             byte[] symbolBytes = new byte[1];
+
             for (int i = 7; i >= 0; i--) {
                 int bitValue = bitInputStream.readBit();
                 symbolBytes[0] |= (bitValue << i);
             }
-            return new HuffmanLeaf(symbolBytes[0], 0); // Frequency dont matter during decompression
+            return new HuffmanLeaf(symbolBytes[0], 0); // Frequency wont matter 
         }
     }
     //WritesCompressedData in new file
     private static void writeCompressedData(String sourceFileName, HashMap<Byte, String> codeTable, BitOutputStream bitOutputStream) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(sourceFileName);
         int byteRead;
+
         while ((byteRead = fileInputStream.read()) != -1) {
             String code = codeTable.get((byte) byteRead);
+
             for (char bit : code.toCharArray()) {
                 bitOutputStream.writeBits(1, bit == '1' ? 1 : 0);
             }
@@ -341,10 +362,12 @@ public class Main {
             } else if (current instanceof HuffmanNode) {
                 HuffmanNode node = (HuffmanNode) current;
                 int bit = bitInputStream.readBit();
+
                 if (bit == -1) {
                     throw new IOException("Unexpected end of input stream");
                 }
-                current = (bit == 0) ? node.left : node.right; // Traverse left for 0 right for 1
+
+                current = (bit == 0) ? node.left : node.right; // Traverse left for 0 right for 1 -- Tree searching
             }
         }
     }
